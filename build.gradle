@@ -1,0 +1,72 @@
+group 'com.peterdkahn.gradle'
+version '1.0-SNAPSHOT'
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '2.13'
+  distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
+}
+
+buildscript {
+    // Needed to enable publish-auth plugin
+    dependencies {
+        classpath 'net.researchgate:gradle-release:2.4.0'
+    }
+
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+}
+apply plugin: 'groovy'
+apply plugin: 'java'
+/*apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'maven-publish-auth'*/
+apply plugin: "net.researchgate.release"
+apply plugin: "jacoco"
+apply plugin: "idea"
+
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+
+compileGroovy {
+    // allow for custom exceptions
+    groovyOptions.forkOptions.jvmArgs = ['-noverify']
+}
+
+release {
+    failOnCommitNeeded = false
+    failOnPublishNeeded = false
+    failOnSnapshotDependencies = false
+    failOnUnversionedFiles = false
+    failOnUpdateNeeded = false
+    revertOnFail = false
+    tagTemplate = "${version}-${name}"
+    preCommitText = "release "
+    preTagCommitMessage = 'Gradle Release - commit before tagging'
+    tagCommitMessage = 'Gradle Release - creates tag'
+    failOnSnapshotDependencies=false
+}
+afterReleaseBuild.dependsOn('publish')
+
+
+
+dependencies {
+    compile localGroovy()
+    compile 'org.codehaus.groovy:groovy-all:2.4.4'
+    compile gradleApi()
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+jar {
+    manifest {
+        attributes("Implementation-Version": version)
+    }
+}
+
